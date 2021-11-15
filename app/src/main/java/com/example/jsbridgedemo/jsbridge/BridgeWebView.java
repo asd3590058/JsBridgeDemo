@@ -54,7 +54,7 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
     public BridgeWebView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
         BridgeWebViewClient mClient = new BridgeWebViewClient(this, this, getContext());
-        this.setWebViewClient(mClient);
+        setWebViewClient(mClient);
         initWebViewSettings();
         this.getView().setClickable(true);
     }
@@ -89,6 +89,7 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
         webSettings.setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         webSettings.setLoadsImagesAutomatically(true);
+        webSettings.setUseWideViewPort(true);
         if (BuildConfig.DEBUG) {
             setWebContentsDebuggingEnabled(true);
         }
@@ -118,6 +119,7 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
         String functionName = BridgeUtil.getFunctionFromReturnUrl(url);
         OnBridgeCallback callback = responseCallbacks.get(functionName);
         String data = BridgeUtil.getDataFromReturnUrl(url);
+        Log.d("chromium data", "处理返回数据:" + data);
         if (callback != null) {
             callback.onCallBack(data);
             responseCallbacks.remove(functionName);
@@ -130,6 +132,7 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
 
     @Override
     public void onLoadFinished() {
+        Log.d("chromium", "加载结束");
         if (getStartupMessage() != null) {
             for (WebJsMessage m : getStartupMessage()) {
                 //分发message 必须在主线程才分发成功
@@ -226,7 +229,9 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
     private void queueMessage(WebJsMessage message) {
         if (startupMessage != null) {
             startupMessage.add(message);
+            Log.d("chromium", "调用queueMessage，存放队列startupMessage中");
         } else {
+            Log.d("chromium", "调用queueMessage，调用dispatchMessage分发数据");
             dispatchMessage(message);
         }
     }
@@ -278,7 +283,7 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
                 List<WebJsMessage> list;
                 try {
                     list = BridgeJsonHelper.toArrayList(data);
-                    Log.d("chromium", "原生发送flushMessageQueue：list为："+list.toString());
+                    Log.d("chromium", "原生发送flushMessageQueue：list为：" + list.toString());
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -352,14 +357,13 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
          */
         @JavascriptInterface
         public void send(String data, String callbackId) {
-            Log.d("chromiumSend",
-                    data + ", callbackId: " + callbackId + " " + Thread.currentThread().getName());
-              sendImpl(data, callbackId);
+            Log.d("chromiumSend", "调用send方法,callbackId =" + callbackId + "," + "data = " + data);
+            sendImpl(data, callbackId);
         }
 
         @JavascriptInterface
         public void response(String data, String responseId) {
-            Log.d("chromium", data + ", responseId: " + responseId + " " + Thread.currentThread().getName());
+            Log.d("chromiumSend", "调用response方法,responseId =" + responseId + "," + "data = " + data);
             if (!TextUtils.isEmpty(responseId)) {
                 OnBridgeCallback function = mCallbacks.remove(responseId);
                 if (function != null) {

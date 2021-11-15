@@ -4,13 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import com.example.jsbridgedemo.jsbridge.BridgeHandler;
 import com.example.jsbridgedemo.jsbridge.BridgeWebView;
 import com.example.jsbridgedemo.jsbridge.OnBridgeCallback;
 import com.google.gson.Gson;
@@ -18,6 +17,9 @@ import com.tencent.smtt.sdk.ValueCallback;
 import com.tencent.smtt.sdk.WebChromeClient;
 import com.tencent.smtt.sdk.WebView;
 
+import org.lsposed.hiddenapibypass.HiddenApiBypass;
+
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -59,39 +61,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mUploadMessage = valueCallback;
                 pickFile();
             }
+
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> valueCallback, FileChooserParams fileChooserParams) {
                 pickFile();
                 return true;
             }
         });
-
+        webView.setGson(new Gson());
         webView.loadUrl("file:///android_asset/demo.html");
         /*原生注册submitFromWeb方法供JS调用，然后通过回调将数据返回给JS*/
         webView.registerHandler("submitFromWeb", (data, function) -> {
             Log.i("chromium", "handler = submitFromWeb, data from web = " + data);
             /*
-             *  此处可以封装，然后使用反射来调用，但是高版本禁止反射，还需要考虑一下。
-             *  如果使用反射 可以用下面的例子
+             *  1.此处可以封装，然后使用反射来调用，但是高版本禁止反射，还需要考虑一下。
+             * 2.建议通过一个公共的方法进行传递，然后通过反射的方法来对数据进行处理，回调。
+             * 3.JS调用原生的情况，原生通过submitFromWeb方法，携带json类型的参数data，解析json获取对应的信息和数据，反射执行。
+             * 4.最后通过全局的callback将数据通过json的方式返回给JS。
+             * 5.使用Json的优势就是数据可塑造性比较强。也不用封装那么多方法，进行维护。这样通过反射的方式可以用类的方式去维护.
              *
-             *
-             *                 try {
-             *                     PluginBean pluginBean =new Gson().fromJson(String.valueOf(data),PluginBean.class);
-             *                     new Gson().
-             *                     // 使用反射获取要解析的类
-             *                     Class<?> cls=Class.forName(getPackageName()+ pluginBean.getPluginname());
-             *                     Method getter = cls.getDeclaredMethod(pluginBean.getFunname(), String.class, MainActivity.class);
-             *                     getter.setAccessible(true);
-             *                     getter.invoke(cls.newInstance(), pluginBean.getParams(), this);
-             *                     callback =  function;
-             *
-             *                 } catch (ClassNotFoundException  e) {
-             *                     e.printStackTrace();
-             *                 }
-             *
-             *  将function赋值之后，在处理数据完毕之后，可以调用callback.onCallBack(data)来返回给js。
              * */
-            function.onCallBack("submitFromWeb exe, response data 中文 from Java");
+
+            try {
+                //绕过高版本进制反射
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    HiddenApiBypass.addHiddenApiExemptions("");
+                }
+                DemoPluginBean demoPluginBean = new Gson().fromJson(String.valueOf(data), DemoPluginBean.class);
+                // 使用反射获取要解析的类
+                Class<?> cls = Class.forName(getPackageName() + demoPluginBean.getPluginname());
+                Method getter = cls.getDeclaredMethod(demoPluginBean.getFunname(), String.class, MainActivity.class);
+                getter.setAccessible(true);
+                Object object=getter.invoke(cls.newInstance(), demoPluginBean.getParams(), this);
+                callback = function;
+                callback.onCallBack(object);
+            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+//            callback.onCallBack("submitFromWeb exe, response data 中文 from Java");
         });
 
         User user = new User();
@@ -99,16 +106,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         location.address = "SDU";
         user.location = location;
         user.name = "大头鬼";
-		Log.d("chromium", "原生发送functionInJs,data："+ new Gson().toJson(user));
-
+        Log.d("chromium", "原生调用callHandler发送functionInJs,data：" + new Gson().toJson(user));
         /*JS注册functionInJs方法供原生调用，原生调用成功之后，通过回调获取data数据。*/
         webView.callHandler("functionInJs", new Gson().toJson(user), data -> Log.d("chromium", "原生接收的回调，onCallBack: " + data));
-
+//        Log.d("chromium", "原生调用sendToWeb发送 hello");
         /*调用JS，通过桥给js发送数据*/
-        webView.sendToWeb(null,"hello");
+//        webView.sendToWeb(null, "hello");
 
 
     }
+
     public void pickFile() {
         Intent chooserIntent = new Intent(Intent.ACTION_GET_CONTENT);
         chooserIntent.setType("image/*");

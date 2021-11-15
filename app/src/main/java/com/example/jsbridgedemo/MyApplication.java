@@ -1,10 +1,13 @@
 package com.example.jsbridgedemo;
 
 import android.app.Application;
+import android.os.Build;
 import android.util.Log;
 
 import com.tencent.smtt.export.external.TbsCoreSettings;
 import com.tencent.smtt.sdk.QbSdk;
+
+import org.lsposed.hiddenapibypass.HiddenApiBypass;
 
 import java.util.HashMap;
 
@@ -32,5 +35,6 @@ public class MyApplication extends Application {
         map.put(TbsCoreSettings.TBS_SETTINGS_USE_SPEEDY_CLASSLOADER, true);
         map.put(TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE, true);
         QbSdk.initTbsSettings(map);
+
     }
 }

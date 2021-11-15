@@ -1,6 +1,7 @@
 package com.example.jsbridgedemo.jsbridge;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.tencent.smtt.sdk.WebView;
 
@@ -51,6 +52,7 @@ public class BridgeUtil {
 
     public static String getDataFromReturnUrl(String url) {
         if (url.startsWith(YY_FETCH_QUEUE)) {
+            Log.d("chromium data", "处理_fetchQueue:" + url);
             return url.replace(YY_FETCH_QUEUE, EMPTY_STR);
         }
 

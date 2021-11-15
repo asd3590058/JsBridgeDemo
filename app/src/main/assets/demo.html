@@ -52,6 +52,7 @@
             window.WebViewJavascriptBridge.send(
                 data
                 , function(responseData) {
+                    console.log(' 调用send方法');
                     document.getElementById("show").innerHTML = "repsonseData from java, data = " + responseData
                 }
             );
@@ -69,6 +70,7 @@
                 , {'pluginname' : 'hello',
                             'funname' : 'sayhello'}
                 , function(responseData) {
+                console.log('调用callHandler');
                     document.getElementById("show").innerHTML = "send get responseData from java, data = " + responseData
                 }
             );
@@ -81,6 +83,7 @@
                             , {'pluginname' : 'hello',
                             'funname' : 'sayhello'}
                             , function(responseData) {
+                             console.log('自定义事件调用callHandler');
                                 document.getElementById("show").innerHTML = "send get responseData from java, data = " + responseData
                             }
                         );
@@ -110,8 +113,10 @@
         }
 
         setTimeout(function(){
+         console.log('创建connectWebViewJavascriptBridge');
         connectWebViewJavascriptBridge(function(bridge) {
             bridge.init(function(message, responseCallback) {
+                console.log('bridge.init');
                 console.log('JS got a message', message);
                 var data = {
                     'Javascript Responds': '测试中文!'
@@ -124,6 +129,7 @@
             });
 
             bridge.registerHandler("functionInJs", function(data, responseCallback) {
+            console.log(' bridge.registerHandler');
                 console.log("glttest onBroadcastUpdate got a message : " + data);
                 document.getElementById("show").innerHTML = ("data from Java: = " + data);
                 if (responseCallback) {

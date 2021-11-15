@@ -5,7 +5,7 @@ package com.example.jsbridgedemo;
  * 创建日期:2019-12-04
  * 类的功能描述:
  */
-public class PluginBean {
+public class DemoPluginBean {
 
   /**
    * pluginname : hello
@@ -15,6 +15,7 @@ public class PluginBean {
 
   private String pluginname;
   private String funname;
+  private String params;
 
   public String getParams() {
     return params;
@@ -24,7 +25,6 @@ public class PluginBean {
     this.params = params;
   }
 
-  private String params;
 
   public String getPluginname() {
     String first = pluginname.substring(0, 1);

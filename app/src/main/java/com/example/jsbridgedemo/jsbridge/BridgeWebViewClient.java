@@ -15,7 +15,8 @@ import java.net.URLDecoder;
 
 /**
  * 如果要自定义WebViewClient必须要集成此类
- * @author  by bruce on 10/28/15.
+ *
+ * @author by bruce on 10/28/15.
  */
 public class BridgeWebViewClient extends WebViewClient {
 
@@ -23,7 +24,7 @@ public class BridgeWebViewClient extends WebViewClient {
     private final Context mContext;
     private final BridgeWebView mWebView;
 
-    public BridgeWebViewClient(BridgeWebView webView ,OnLoadJsListener listener, Context context) {
+    public BridgeWebViewClient(BridgeWebView webView, OnLoadJsListener listener, Context context) {
         this.mWebView = webView;
         this.mListener = listener;
         this.mContext = context;
@@ -47,15 +48,15 @@ public class BridgeWebViewClient extends WebViewClient {
         // 如果是返回数据
         if (url.startsWith(BridgeUtil.YY_RETURN_DATA)) {
             mWebView.handlerReturnData(url);
-            Log.d("chromium data", "返回数据:" + url);
             return true;
         } else if (url.startsWith(BridgeUtil.YY_OVERRIDE_SCHEMA)) {
             mWebView.flushMessageQueue();
             Log.d("chromium data", "刷新队列:" + url);
             return true;
+        } else {
+            view.loadUrl(url);
+            return true;
         }
-        view.loadUrl(url);
-        return true;
     }
 
     @Override
@@ -84,7 +85,7 @@ public class BridgeWebViewClient extends WebViewClient {
             Log.d("chromium data", "刷新队列:" + url);
             mWebView.flushMessageQueue();
             return true;
-        }else {
+        } else {
             webView.loadUrl(url);
             return true;
         }
@@ -107,8 +108,9 @@ public class BridgeWebViewClient extends WebViewClient {
 
         /**
          * 开始加载
-        */
+         */
         void onLoadStart();
+
         /**
          * 加载结束
          */
