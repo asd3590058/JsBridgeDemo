@@ -1,4 +1,4 @@
-# JsBridge原理
+# JsBridge原理 基于X5WebView
 ### 调用流程  1.原生调用H5
 
 1.  MainActivity中通过webView调用callHandler方法，调用H5的functionInJs方法，最终调用queueMessage，将数据存放队列startupMessage中。
@@ -51,3 +51,8 @@
 
 2.  本质上的交互就是通过shouldOverrideUrlLoading拦截，通过loadUrl回传。
     
+    
+    
+    参考的项目：
+    1.https://github.com/lzyzsd/JsBridge
+    2.https://github.com/yangchong211/YCWebView
