@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.example.jsbridgedemo.jsbridge.BridgeWebView;
+import com.example.jsbridgedemo.jsbridge.MainJavascriptInterface;
 import com.example.jsbridgedemo.jsbridge.OnBridgeCallback;
 import com.google.gson.Gson;
 import com.tencent.smtt.sdk.ValueCallback;
@@ -23,9 +24,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-
-    private final String TAG = "MainActivity";
-
     BridgeWebView webView;
 
     Button button;
@@ -50,9 +48,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        webView = (BridgeWebView) findViewById(R.id.webView);
+        webView = findViewById(R.id.webView);
 
-        button = (Button) findViewById(R.id.button);
+        button = findViewById(R.id.button);
 
         button.setOnClickListener(this);
         webView.setWebChromeClient(new WebChromeClient() {
@@ -69,10 +67,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
         webView.setGson(new Gson());
+        MainJavascriptInterface  mainJavascriptInterface = new MainJavascriptInterface(webView.getResponseCallbacks(), webView,MainActivity.this);
+        webView.addJavascriptInterface(mainJavascriptInterface, "android");
         webView.loadUrl("file:///android_asset/demo.html");
         /*原生注册submitFromWeb方法供JS调用，然后通过回调将数据返回给JS*/
         webView.registerHandler("submitFromWeb", (data, function) -> {
-            Log.i("chromium", "handler = submitFromWeb, data from web = " + data);
+            Log.d("chromium", "handler = submitFromWeb, data from web = " + data);
             /*
              *  1.此处可以封装，然后使用反射来调用，但是高版本禁止反射，还需要考虑一下。
              * 2.建议通过一个公共的方法进行传递，然后通过反射的方法来对数据进行处理，回调。
@@ -84,12 +84,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             try {
                 //绕过高版本进制反射
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    HiddenApiBypass.addHiddenApiExemptions("");
-                }
+
                 DemoPluginBean demoPluginBean = new Gson().fromJson(String.valueOf(data), DemoPluginBean.class);
                 // 使用反射获取要解析的类
-                Class<?> cls = Class.forName(getPackageName() + demoPluginBean.getPluginname());
+                String funname = demoPluginBean.getFunname();
+                Log.d("chromium", "funname = " + funname);
+                Class<?> cls = Class.forName(getPackageName() + "."+demoPluginBean.getPluginname());
                 Method getter = cls.getDeclaredMethod(demoPluginBean.getFunname(), String.class, MainActivity.class);
                 getter.setAccessible(true);
                 Object object=getter.invoke(cls.newInstance(), demoPluginBean.getParams(), this);
@@ -98,7 +98,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
                 e.printStackTrace();
             }
-//            callback.onCallBack("submitFromWeb exe, response data 中文 from Java");
         });
 
         User user = new User();
@@ -109,9 +108,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d("chromium", "原生调用callHandler发送functionInJs,data：" + new Gson().toJson(user));
         /*JS注册functionInJs方法供原生调用，原生调用成功之后，通过回调获取data数据。*/
         webView.callHandler("functionInJs", new Gson().toJson(user), data -> Log.d("chromium", "原生接收的回调，onCallBack: " + data));
-//        Log.d("chromium", "原生调用sendToWeb发送 hello");
+        Log.d("chromium", "原生调用sendToWeb发送 hello");
         /*调用JS，通过桥给js发送数据*/
-//        webView.sendToWeb(null, "hello");
+        webView.sendToWeb(null, "hello");
 
 
     }

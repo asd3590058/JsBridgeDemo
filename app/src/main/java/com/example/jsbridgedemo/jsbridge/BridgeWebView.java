@@ -117,9 +117,10 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
 
     public void handlerReturnData(String url) {
         String functionName = BridgeUtil.getFunctionFromReturnUrl(url);
+        Log.d("chromium data", "处理返回数据，functionName:" + functionName);
         OnBridgeCallback callback = responseCallbacks.get(functionName);
         String data = BridgeUtil.getDataFromReturnUrl(url);
-        Log.d("chromium data", "处理返回数据:" + data);
+        Log.d("chromium data", "处理返回数据，data:" + data);
         if (callback != null) {
             callback.onCallBack(data);
             responseCallbacks.remove(functionName);
@@ -294,20 +295,22 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
                 }
                 for (int i = 0; i < list.size(); i++) {
                     WebJsMessage message = list.get(i);
+                    Log.d("chromium", "flushMessageQueue：message为：" + message.toString());
                     String responseId = message.responseId;
-                    // 是否是response  CallBackFunction
+                    // 是否是response  如果是返回数据直接callBack返回给原生
                     if (!TextUtils.isEmpty(responseId)) {
+                        Log.d("chromium", "是response：" + data);
                         OnBridgeCallback function = responseCallbacks.get(responseId);
                         Object responseData = message.responseData;
                         function.onCallBack(responseData);
                         responseCallbacks.remove(responseId);
                     } else {
                         OnBridgeCallback responseFunction;
-                        // if had callbackId 如果有回调Id
+                        // 如果有callBackId
                         final String callbackId = message.callbackId;
                         if (!TextUtils.isEmpty(callbackId)) {
                             responseFunction = data1 -> {
-                                Log.d("chromium", "flushMessageQueue：" + data);
+                                Log.d("chromium", "有callbackId ：" + data);
                                 WebJsMessage responseMsg = new WebJsMessage();
                                 responseMsg.responseId = callbackId;
                                 responseMsg.responseData = data1;
@@ -318,16 +321,20 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
                                 // do nothing
                             };
                         }
-                        // BridgeHandler执行
+                        Log.d("chromium", "给原生回调");
+                        // BridgeHandler执行回调给原生的callback
                         BridgeHandler handler;
                         if (!TextUtils.isEmpty(message.handlerName)) {
                             handler = messageHandlers.get(message.handlerName);
+                            messageHandlers.remove(message.handlerName);
+                            Log.d("chromium", "给原生回调，message.handlerName"+message.handlerName);
                         } else {
+                            Log.d("chromium", "给原生回调  默认handler");
                             handler = new DefaultHandler();
                         }
                         if (handler != null) {
+                            Log.d("chromium", "给原生回调  执行handler");
                             handler.handler(message.data, responseFunction);
-
                         }
                     }
                 }
@@ -337,6 +344,7 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
 
     public void loadUrl(String jsUrl, OnBridgeCallback returnCallback) {
         this.loadUrl(jsUrl);
+        Log.d("chromium", "loadUrl：" + BridgeUtil.parseFunctionName(jsUrl));
         // 添加至 Map<String, CallBackFunction>
         responseCallbacks.put(BridgeUtil.parseFunctionName(jsUrl), returnCallback);
     }
@@ -357,15 +365,16 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
          */
         @JavascriptInterface
         public void send(String data, String callbackId) {
-            Log.d("chromiumSend", "调用send方法,callbackId =" + callbackId + "," + "data = " + data);
+            Log.d("chromium", "调用send方法,callbackId =" + callbackId + "," + "data = " + data);
             sendImpl(data, callbackId);
         }
 
         @JavascriptInterface
         public void response(String data, String responseId) {
-            Log.d("chromiumSend", "调用response方法,responseId =" + responseId + "," + "data = " + data);
+            Log.d("chromium", "调用response方法,responseId =" + responseId + "," + "data = " + data);
             if (!TextUtils.isEmpty(responseId)) {
                 OnBridgeCallback function = mCallbacks.remove(responseId);
+                Log.d("chromium", "function=：" + function);
                 if (function != null) {
                     function.onCallBack(data);
                 }

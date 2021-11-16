@@ -68,7 +68,7 @@
                window.WebViewJavascriptBridge.callHandler(
                 'submitFromWeb'
                 , {'pluginname' : 'hello',
-                            'funname' : 'sayhello'}
+                            'funname' : 'sayHello'}
                 , function(responseData) {
                 console.log('调用callHandler');
                     document.getElementById("show").innerHTML = "send get responseData from java, data = " + responseData
@@ -81,7 +81,7 @@
                         window.WebViewJavascriptBridge.callHandler(
                             'submitFromWeb'
                             , {'pluginname' : 'hello',
-                            'funname' : 'sayhello'}
+                            'funname' : 'sayHello'}
                             , function(responseData) {
                              console.log('自定义事件调用callHandler');
                                 document.getElementById("show").innerHTML = "send get responseData from java, data = " + responseData
@@ -121,7 +121,7 @@
                 var data = {
                     'Javascript Responds': '测试中文!'
                 };
-
+                document.getElementById("show").innerHTML = ("data from Java: = " + data);
                 if (responseCallback) {
                     console.log('JS responding with', data);
                     responseCallback(data);
@@ -134,6 +134,7 @@
                 document.getElementById("show").innerHTML = ("data from Java: = " + data);
                 if (responseCallback) {
                     var responseData = "Javascript Says Right back aka!";
+                    console.log("H5的responseCallback" + data);
                     responseCallback(responseData);
                 }
             });
