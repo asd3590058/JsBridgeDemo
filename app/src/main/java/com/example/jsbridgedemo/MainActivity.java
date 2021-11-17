@@ -108,9 +108,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d("chromium", "原生调用callHandler发送functionInJs,data：" + new Gson().toJson(user));
         /*JS注册functionInJs方法供原生调用，原生调用成功之后，通过回调获取data数据。*/
         webView.callHandler("functionInJs", new Gson().toJson(user), data -> Log.d("chromium", "原生接收的回调，onCallBack: " + data));
-        Log.d("chromium", "原生调用sendToWeb发送 hello");
+//        Log.d("chromium", "原生调用sendToWeb发送 hello");
         /*调用JS，通过桥给js发送数据*/
-        webView.sendToWeb(null, "hello");
+//        webView.sendToWeb(null, "hello");
 
 
     }

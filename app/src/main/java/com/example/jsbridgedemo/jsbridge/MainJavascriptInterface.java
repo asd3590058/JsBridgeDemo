@@ -26,11 +26,6 @@ public class MainJavascriptInterface extends BridgeWebView.BaseJavascriptInterfa
         mContext = context;
     }
 
-    @Override
-    public void sendImpl(String data, String webResponseId) {
-        //JS调用JAVA 通过 @JavascriptInterface 方式
-        this.reponseId = webResponseId;
-        mWebView.sendToWeb(null,"data");
-    }
+
 
 }

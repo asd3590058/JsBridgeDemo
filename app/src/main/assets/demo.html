@@ -56,7 +56,12 @@
                     document.getElementById("show").innerHTML = "repsonseData from java, data = " + responseData
                 }
             );
-
+            // 单独调用 没有回调 直接交给原生处理。
+<!--             window.WebViewJavascriptBridge.callHandler(-->
+<!--                'submitFromWeb'-->
+<!--                , {'pluginname' : 'hello',-->
+<!--                  'funname' : 'sayHello'}-->
+<!--            );-->
         }
 
         function testClick1() {

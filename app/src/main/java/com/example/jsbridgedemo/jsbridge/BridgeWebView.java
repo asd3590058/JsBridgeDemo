@@ -318,16 +318,17 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
                             };
                         } else {
                             responseFunction = data2 -> {
-                                // do nothing
+                                //如果没有回调，什么都不返回 do nothing
+                                Log.d("chromium", "doNoting");
                             };
                         }
                         Log.d("chromium", "给原生回调");
                         // BridgeHandler执行回调给原生的callback
                         BridgeHandler handler;
                         if (!TextUtils.isEmpty(message.handlerName)) {
+                            Log.d("chromium", "给原生回调，message.handlerName："+message.handlerName);
                             handler = messageHandlers.get(message.handlerName);
-                            messageHandlers.remove(message.handlerName);
-                            Log.d("chromium", "给原生回调，message.handlerName"+message.handlerName);
+//                            messageHandlers.remove(message.handlerName);
                         } else {
                             Log.d("chromium", "给原生回调  默认handler");
                             handler = new DefaultHandler();
@@ -366,7 +367,7 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
         @JavascriptInterface
         public void send(String data, String callbackId) {
             Log.d("chromium", "调用send方法,callbackId =" + callbackId + "," + "data = " + data);
-            sendImpl(data, callbackId);
+//            sendImpl(data, callbackId);
         }
 
         @JavascriptInterface
@@ -389,7 +390,7 @@ public class BridgeWebView extends WebView implements BridgeWebViewClient.OnLoad
          * @date 2021/11/9 11:48
          * @author 武泓吉
          */
-        public abstract void sendImpl(String data, String webResponseId);
+//        public abstract void sendImpl(String data, String webResponseId);
     }
 
 }

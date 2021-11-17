@@ -78,8 +78,8 @@ public class BridgeWebViewClient extends WebViewClient {
 
         // 如果是返回数据
         if (url.startsWith(BridgeUtil.YY_RETURN_DATA)) {
-            mWebView.handlerReturnData(url);
             Log.d("chromium data", "返回数据:" + url);
+            mWebView.handlerReturnData(url);
             return true;
         } else if (url.startsWith(BridgeUtil.YY_OVERRIDE_SCHEMA)) {
             Log.d("chromium data", "刷新队列:" + url);
